@@ -5,15 +5,17 @@ public class BlackJack
 {
 	public static void main(String [] args)
 	{
-		String rounds = args[0];
-		String decks = args[1];
-		String playerBank = args[2];
-		int numRounds = Integer.parseInt(rounds);
-		int numDecks = Integer.parseInt(decks);
-		int startingPlayerBank = Integer.parseInt(playerBank);
+		//String rounds = args[0];
+		//String decks = args[1];
+		//String playerBank = args[2];
+		int numRounds = Integer.parseInt(args[0]);
+		int numDecks = Integer.parseInt(args[1]);
+		int startingPlayerBank = Integer.parseInt(args[2]);
+		int betAmount = Integer.parseInt(args[3]);
 
-		System.out.println("Starting BlackJack with " + rounds + " rounds and " + decks + " decks in the shoe");
-		System.out.println("Players Starting Bank is: " + startingPlayerBank);
+		System.out.println("Starting BlackJack with " + numRounds + " rounds and " + numDecks + " decks in the shoe");
+		System.out.println("Players Starting Bank is $" + startingPlayerBank);
+		System.out.println("Player will bet $" + betAmount + " every round");
 		
 		RandIndexQueue<Card> shoeCards = new RandIndexQueue<Card>(52*numDecks);
 
@@ -35,7 +37,13 @@ public class BlackJack
 		shoeCards.shuffle();
 		shoeCards.shuffle();
 
-		Game game = new Game(numRounds, startingPlayerBank);
+		Boolean runHeadless = false;
+
+		if(numRounds>10){
+			runHeadless = true;
+		}
+
+		Game2 game = new Game2(numRounds, numDecks, startingPlayerBank, runHeadless, betAmount);
 
 		game.playGame(shoeCards);
 

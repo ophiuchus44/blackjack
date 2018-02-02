@@ -1,24 +1,32 @@
 public class Game{
 
-
 	int playerWins, playerBUSTED;
 	int dealerWins, dealerBUSTED;
 	int pushes;
 	int rounds;
+	int playerBlackJack;
+	int dealerBlackJack;
 	int playerBank;
+
+	int totalCards = 0;
 
 	RandIndexQueue<Card> discard = new RandIndexQueue<>(2);
 
-	public Game(int rounds, int playerBank){
+	public Game(int rounds, int playerBank, int decks){
 		// initialize to zero and get rounds
 		playerWins= 0;
 		dealerWins= 0;
 		pushes= 0;
 
+		playerBlackJack = 0;
+		dealerBlackJack = 0;
+
 		playerBUSTED = 0;
 		dealerBUSTED = 0;
 		this.rounds = rounds;
 		this.playerBank = playerBank;
+
+		totalCards = decks*52;
 	}
 
 	public void playGame(RandIndexQueue<Card> theShoe){
@@ -30,12 +38,29 @@ public class Game{
 			System.out.println("########## Start of Round " + i +  "##########");
 
 			// if theSHoe is less than 25% clear, push all discard back into theSHoe and shuffle
+			if(((double) theShoe.size() / (double) totalCards) < .25){
+				// put dicard back in shoe
+				// shuffle
+
+				System.out.println("should only be less than .25" + ((double) theShoe.size()/ (double) totalCards));
+
+				System.out.println("#*#*#*#*# RESHUFFLING THE SHOE IN ROUND " + i + " #*#*#*#*#");
+
+				for (int ii=0; ii<discard.size(); ii++){
+					theShoe.offer(discard.poll());
+				}
+			}
+
 			playRound(theShoe);
 			int tmp = theShoe.size();
 			System.out.println("theShoe size = " + tmp);
 		}
 
 
+		System.out.println("PUSHES = " + pushes);
+
+		System.out.println("Player BlackJack = " + playerBlackJack);
+		System.out.println("Dealer BlackJack = " + dealerBlackJack);
 
 		System.out.println("Player Wins = " + playerWins);
 		System.out.println("Dealer Wins = " + dealerWins);
@@ -65,6 +90,45 @@ public class Game{
 		playerCards.offer(theShoe.poll());
 
 		dealerCards.offer(theShoe.poll());	
+
+
+
+		int dealerHandStart = 0;
+		int playerHandStart = 0;
+
+		for (int yzzzy=0; yzzzy<dealerCards.size(); yzzzy++){
+		//	System.out.println("dealers's cards = " + dealerCards.get(yzzzy) + " " +dealerCards.get(yzzzy).value());
+			dealerHandStart+=dealerCards.get(yzzzy).value();
+
+			}
+
+		for (int yzzz=0; yzzz<playerCards.size(); yzzz++){
+		//	System.out.println("players's cards = " + playerCards.get(yzzz) + " " +playerCards.get(yzzz).value());
+			playerHandStart+=playerCards.get(yzzz).value();
+
+			}
+
+
+		if(dealerHandStart==21 && playerHandStart==21){
+			pushes++;
+			return;
+		}	
+
+		if(playerHandStart==21 && dealerHandStart<21){
+			System.out.println("___PLAERYBLACKJACK___");
+			playerWins++;
+			playerBlackJack++;
+			return;
+		}
+
+		if(dealerHandStart==21 && playerHandStart<21){
+			System.out.println("___DEALERBLACKJACK___");
+			dealerWins++;
+			dealerBlackJack++;
+			return;
+		}
+
+
 
 		System.out.println("***dealer's UPCARD = " + dealerCards.get(1) + " " +dealerCards.get(1).value());
 
@@ -100,23 +164,39 @@ public class Game{
 		}
 
 
+
+
+
+
 		
 		int playerHand = 0;
+		int playerAces = 0;
+
 
 		for (int y=0; y<playerCards.size(); y++){
 			System.out.println("players's cards = " + playerCards.get(y) + " " +playerCards.get(y).value());
 			playerHand+=playerCards.get(y).value();
+			if(playerCards.get(y).value()==11){
+				playerAces++;
+				}
 
 			}
+
+
+		while(playerHand>21 && playerAces>0){
+			// use ace as one instead of 11... not subtract 10....
+			playerHand-=10;
+			playerAces--;
+		}
 		System.out.println("****Staying****");	
 		System.out.println("PlayerHand = " + playerHand);	
 
-		int dealerHand = 0;
+	//	int dealerHand = 0;
 
-		for (int yyy=0; yyy<dealerCards.size(); yyy++){
-			System.out.println("dealer's cards = " + dealerCards.get(yyy) + " " +dealerCards.get(yyy).value());
-			dealerHand+=dealerCards.get(yyy).value();
-			}
+	//	for (int yyy=0; yyy<dealerCards.size(); yyy++){
+	//		System.out.println("dealer's cards = " + dealerCards.get(yyy) + " " +dealerCards.get(yyy).value());
+	//		dealerHand+=dealerCards.get(yyy).value();
+	//		}
 
 
 		boolean nextCard2 = true;
@@ -147,10 +227,41 @@ public class Game{
 
 		}
 
+		int dealerHand = 0;
+		int dealerAces = 0;
 
+		for (int yyy=0; yyy<dealerCards.size(); yyy++){
+			System.out.println("dealer's cards = " + dealerCards.get(yyy) + " " +dealerCards.get(yyy).value());
+			dealerHand+=dealerCards.get(yyy).value();
+			
+			if(dealerCards.get(yyy).value()==11){
+				dealerAces++;
+				}
+			}
+
+		while(dealerHand>21 && dealerAces>0){
+			// use ace as one instead of 11... not subtract 10....
+			dealerHand-=10;
+			dealerAces--;
+		}
+
+
+		System.out.println("****Staying****");	
+		System.out.println("Dealer Hand = " + dealerHand);	
+
+
+
+
+
+
+
+/// determining who wont he round
 
 		if(((playerHand > dealerHand) && !playerBusted) || dealerBusted){
 			playerWins++;
+		}
+		else if (playerHand == dealerHand){
+			pushes++;
 		}
 		else{
 			dealerWins++;
@@ -185,7 +296,8 @@ public class Game{
 
 	//	System.out.println("PlayerHand total= " + playerHand);
 
-		System.out.println("dealer's UPCARD = " + dealerCards.get(1) + " " +dealerCards.get(1).value());
+		//
+		//System.out.println("dealer's UPCARD = " + dealerCards.get(1) + " " +dealerCards.get(1).value());
 
 	//	System.out.println("playerHand count = " + playerHand);
 
@@ -205,7 +317,7 @@ public class Game{
 			shouldHitIt = false;
 		}
 
-		if(dealerHas<6 && playerHand>12){
+		if(dealerHas<6 && playerHand>=12){
 			shouldHitIt = false;
 		}
 
@@ -220,7 +332,7 @@ public class Game{
 
 	public Boolean dealerShouldHit(RandIndexQueue<Card> dealerCards, RandIndexQueue<Card> playerCards){
 
-		boolean shouldHitIt = true;
+		boolean shouldHitIt = false;
 
 		int dealerHand=0;
 
@@ -229,6 +341,8 @@ public class Game{
 			dealerHand+=dealerCards.get(y).value();
 		}
 
+
+		System.out.println("CURRENT DEALER HAND = " + dealerHand);
 
 
 		int playerHand=0;
@@ -279,10 +393,24 @@ public class Game{
 		boolean isBusted = false;
 
 		int playerHand=0;
+		int aces = 0;
+
 
 		for (int y=0; y<playerCards.size(); y++){
 		//	System.out.println("players's cards = " + playerCards.get(y) + " " +playerCards.get(y).value());
 			playerHand+=playerCards.get(y).value();
+
+			if(playerCards.get(y).value()==11){
+				aces++;
+
+			}
+		}
+
+
+		while(playerHand>21 && aces>0){
+			// use ace as one instead of 11... not subtract 10....
+			playerHand-=10;
+			aces--;
 		}
 
 		if(playerHand>21){
@@ -292,11 +420,56 @@ public class Game{
 
 	}
 
+public int cardValue(RandIndexQueue<Card> playerCards){
+	int playerHand = 0;
+	int aces = 0;
+
+
+	for (int y=0; y<playerCards.size(); y++){
+	//	System.out.println("players's cards = " + playerCards.get(y) + " " +playerCards.get(y).value());
+		playerHand+=playerCards.get(y).value();
+
+		if(playerCards.get(y).value()==11){
+			aces++;
+
+		}
+	}
+
+	while(playerHand>21 && aces>0){
+			// use ace as one instead of 11... not subtract 10....
+			playerHand-=10;
+			aces--;
+		}
+
+	return playerHand;
+
+
+}
+
+/*	public Boolean hasAce(RandIndexQueue<Card> playerCards){
+
+		boolean hasAnAce =false;
+
+		//int aces = 0;
+		for (int aaa=0; aaa<playerCards.size();  aaa++){
+			//int tmp = playerCards.get(aaa).value();
+
+			if(playerCards.get(aaa).value()==11){
+				hasAnAce = true;
+			}
+
+		}
+		return hasAnAce;
+
+	} */
+
 }
 
 
 
 // to do 
+
+// account for ace - if total is greater than 21 but last card was an ace, change to 1 instead of 11
 
 // trace version vs non trace?
 // check if number of rounds argument is <= 10 first, if more, then run headless version
